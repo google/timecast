@@ -1,0 +1,6 @@
+name: timecast
+dependencies:
+  - python>=3.6
+  - numpy
+  - jax
+  - jaxlib
