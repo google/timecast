@@ -13,6 +13,5 @@
 # limitations under the License.
 """timecast/__init__.py"""
 from timecast.modules import Module
-from timecast.utils.experiment import experiment
 
-__all__ = ["experiment", "Module"]
+__all__ = ["Module"]
