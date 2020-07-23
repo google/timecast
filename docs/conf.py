@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath("../timecast"))
 project = "timecast"
 copyright = "2020, Google AI Princeton"
 author = "Google AI Princeton"
-version = "0.3.1"
+version = "0.4.0"
 release = version
 
 
