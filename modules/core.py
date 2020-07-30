@@ -98,6 +98,16 @@ class Module:
         for name, module in self.modules.items():
             module.set_param_tree(tree[name])
 
+    def update_param(self, key, val):
+        if key in self.__dict__:
+            self.__dict__[key] = val
+
+        self.params[key] = val
+
+    def update_params(self, dict):
+        for key, val in dict.items():
+            self.update_param(key, val)
+
     def add_module(self, module, name=None):
         """Add module outside attributes"""
         counter = 0
