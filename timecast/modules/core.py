@@ -44,7 +44,7 @@ def tree_unflatten(aux, leaves):
     module.set_param_tree(jax.tree_util.tree_unflatten(aux["treedef"], leaves))
     for attr in aux["attrs"]:
         if attr in module.__dict__["params"]:
-            module.__setattr__(attr, module.__dict__["params"][attr])
+            module.__dict__[attr] = module.__dict__["params"][attr]
     return module
 
 
@@ -97,16 +97,6 @@ class Module:
             self.__dict__[param] = tree[param]
         for name, module in self.modules.items():
             module.set_param_tree(tree[name])
-
-    def update_param(self, key, val):
-        if key in self.__dict__:
-            self.__dict__[key] = val
-
-        self.params[key] = val
-
-    def update_params(self, dict):
-        for key, val in dict.items():
-            self.update_param(key, val)
 
     def add_module(self, module, name=None):
         """Add module outside attributes"""
