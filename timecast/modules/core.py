@@ -24,11 +24,22 @@ import inspect
 
 import jax
 import jax.numpy as jnp
+import numpy as np
+
+
+def tree_jnpify(param_tree):
+    if isinstance(param_tree, jnp.ndarray) or isinstance(param_tree, np.ndarray):
+        return jnp.asarray(param_tree)
+
+    for key, val in param_tree.items():
+        param_tree[key] = tree_jnpify(val)
+
+    return param_tree
 
 
 def tree_flatten(module):
     """Flatten module parameters for Jax"""
-    leaves, aux = jax.tree_util.tree_flatten(module.get_param_tree())
+    leaves, aux = jax.tree_util.tree_flatten(tree_jnpify(module.get_param_tree()))
     aux = {
         "treedef": aux,
         "arguments": module.arguments,

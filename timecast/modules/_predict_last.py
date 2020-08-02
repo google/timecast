@@ -13,6 +13,7 @@
 # limitations under the License.
 """timecast/modules/_predict_last.py"""
 import jax.numpy as jnp
+import numpy as np
 
 from timecast.modules.core import Module
 
@@ -23,10 +24,14 @@ class PredictLast(Module):
     def __init__(self, steps=1):
         """init"""
         self.steps = steps
-        self.history = jnp.zeros(steps)
+        self.history = np.zeros(steps)
 
     def __call__(self, x):
         """call"""
-        self.history = jnp.roll(self.history, shift=1)
-        self.history = self.history.at[0].set(x)
+        if isinstance(x, jnp.ndarray):
+            self.history = jnp.roll(self.history, shift=1)
+            self.history = self.history.at[0].set(x)
+        else:
+            self.history = np.roll(self.history, shift=1)
+            self.history[0] = x
         return self.history[self.steps - 1]
