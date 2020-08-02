@@ -14,5 +14,6 @@
 """timecast/modules/__init__.py"""
 from timecast.modules.core import Module
 from timecast.modules._predict_constant import PredictConstant
+from timecast.modules._predict_last import PredictLast
 
-__all__ = ["Module", "PredictConstant"]
+__all__ = ["Module", "PredictConstant", "PredictLast"]

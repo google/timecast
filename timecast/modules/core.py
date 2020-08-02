@@ -57,7 +57,7 @@ class Module:
         obj.__setattr__("attrs", set())
         obj.__setattr__("modules", {})
         obj.__setattr__("params", {})
-        obj.__setattr__("arguments", inspect.signature(obj.__init__).bind(*args))
+        obj.__setattr__("arguments", inspect.signature(obj.__init__).bind(*args, **kwargs))
         obj.arguments.apply_defaults()
 
         return obj
@@ -76,7 +76,8 @@ class Module:
             * Any attribute of type jnp.ndarray is added to a params dict
         """
         self.__dict__[name] = value
-        self.attrs.add(name)
+        if name[0] != "_":
+            self.attrs.add(name)
 
         if isinstance(value, Module):
             self.__dict__["modules"][name] = value

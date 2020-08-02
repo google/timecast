@@ -16,7 +16,7 @@ import jax
 import numpy as np
 import pytest
 
-from timecast import experiment
+from timecast.utils.experiment import experiment
 from timecast.utils import random
 
 

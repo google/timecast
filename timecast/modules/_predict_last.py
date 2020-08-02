@@ -12,16 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """timecast/modules/_predict_last.py"""
+import jax.numpy as jnp
+
 from timecast.modules.core import Module
 
 
 class PredictLast(Module):
     """Predict last value"""
 
-    def __init__(self):
+    def __init__(self, steps=1):
         """init"""
-        pass
+        self.steps = steps
+        self.history = jnp.zeros(steps)
 
     def __call__(self, x):
         """call"""
-        return x
+        self.history = jnp.roll(self.history, shift=1)
+        self.history = self.history.at[0].set(x)
+        print(self.steps - 1)
+        return self.history[self.steps - 1]
