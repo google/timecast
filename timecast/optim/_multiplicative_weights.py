@@ -24,8 +24,9 @@ class MultiplicativeWeights:
         self.eta = eta
         self.grad = jax.jit(jax.grad(lambda W, preds, y: jnp.square(jnp.dot(W, preds) - y).sum()))
 
-    def __call__(self, module, params, x, y):
+    def __call__(self, module, x, y):
         """call"""
-        grad = self.grad(params, x, y)
-        new_params = params * jnp.exp(-1 * self.eta * grad)
-        return new_params / new_params.sum()
+        grad = self.grad(module.W, x, y)
+        module.W = module.W * jnp.exp(-1 * self.eta * grad)
+        module.W /= module.W.sum()
+        return module

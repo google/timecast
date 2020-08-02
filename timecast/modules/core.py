@@ -18,6 +18,7 @@ Todos:
   - How to identify params (right now just ndarray)
   - Users can do bad things with naming
   - Think about jnp/np shim layer beyond tree_jnpify
+  - Why are submodule params getting stuck in params dict after unflatten
 """
 import inspect
 
@@ -26,9 +27,22 @@ import jax.numpy as jnp
 import numpy as np
 
 
+def is_param(x):
+    """Definition of parameter"""
+    return isinstance(x, jnp.ndarray) or isinstance(x, np.ndarray)
+
+
+def is_module(x):
+    """Definition of module
+
+    NOTE: this is a kludge to deal with different id(Module)
+    """
+    return "modules" in dir(x)
+
+
 def tree_jnpify(param_tree):
     """Turn numpy arrays into jax arrays"""
-    if isinstance(param_tree, jnp.ndarray) or isinstance(param_tree, np.ndarray):
+    if is_param(param_tree):
         return jnp.asarray(param_tree)
 
     for key, val in param_tree.items():
@@ -91,9 +105,9 @@ class Module:
         if name[0] != "_":
             self.attrs.add(name)
 
-        if isinstance(value, Module):
+        if is_module(value):
             self.__dict__["modules"][name] = value
-        elif isinstance(value, jnp.ndarray):
+        elif is_param(value):
             self.__dict__["params"][name] = value
 
     def get_param_tree(self):
@@ -103,25 +117,24 @@ class Module:
             params[name] = module.get_param_tree()
         return params
 
-    def set_param_tree(self, tree):
+    def set_param_tree(self, tree=None, func=None):
         """Apply parameter tree"""
+        tree = tree or self
+        func = func or (lambda old, new: new)
+
+        is_dict = isinstance(tree, dict)
+        tree_params = tree if is_dict else tree.params
+        tree_modules = tree if is_dict else tree.modules
+
         for param in self.params:
-            self.params[param] = tree[param]
-            self.__dict__[param] = tree[param]
+            if param in self.modules:
+                continue
+            val = func(self.params[param], tree_params[param])
+            self.params[param] = val
+            self.__dict__[param] = val
+
         for name, module in self.modules.items():
-            module.set_param_tree(tree[name])
-
-    def update_param(self, key, val):
-        """Update single parameter"""
-        if key in self.__dict__:
-            self.__dict__[key] = val
-
-        self.params[key] = val
-
-    def update_params(self, dict):
-        """Update all parameters"""
-        for key, val in dict.items():
-            self.update_param(key, val)
+            module.set_param_tree(tree_modules[name], func)
 
     def add_module(self, module, name=None):
         """Add module outside attributes"""

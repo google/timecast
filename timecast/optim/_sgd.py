@@ -26,10 +26,9 @@ class SGD:
         self.loss_fn = loss_fn
         self.learning_rate = learning_rate
 
-    def __call__(self, module, params, x, y):
+    def __call__(self, module, x, y):
         """call"""
         grad = jax.jit(jax.grad(lambda module, x, y: self.loss_fn(module(x), y)))(module, x, y)
-        print(grad.linear.params)
-        new_params = {k: w - self.learning_rate * grad.params[k] for (k, w) in params.items()}
+        module.set_param_tree(grad, lambda old, new: old - self.learning_rate * new)
 
-        return new_params
+        return module
