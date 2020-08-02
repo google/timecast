@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """timecast/modules/__init__.py"""
-from timecast.modules.core import Module
+from timecast.modules._ar import AR
+from timecast.modules._linear import Linear
 from timecast.modules._predict_constant import PredictConstant
 from timecast.modules._predict_last import PredictLast
+from timecast.modules.core import Module
 
-__all__ = ["Module", "PredictConstant", "PredictLast"]
+__all__ = ["Module", "AR", "Linear", "PredictConstant", "PredictLast"]

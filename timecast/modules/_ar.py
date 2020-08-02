@@ -11,26 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""timecast/modules/_predict_last.py"""
+"""timecast/modules/_ar.py"""
 from typing import Iterable
 
 import jax.numpy as jnp
 import numpy as np
 
+from timecast.modules._linear import Linear
 from timecast.modules.core import Module
 
 
-class PredictLast(Module):
-    """Predict last value"""
+class AR(Module):
+    """Predict linear combination of history"""
 
-    def __init__(self, input_shape=1, steps=1):
+    def __init__(self, history_len, input_shape, output_shape):
         """init"""
         if not isinstance(input_shape, Iterable):
             input_shape = (input_shape,)
 
-        self.input_shape = input_shape
-        self.steps = steps
-        self.history = np.zeros((steps,) + input_shape)
+        history_shape = (history_len,) + input_shape
+        self.history = np.zeros(history_shape)
+
+        self.linear = Linear(input_shape=history_shape, output_shape=output_shape)
 
     def __call__(self, x):
         """call"""
@@ -40,4 +42,4 @@ class PredictLast(Module):
         else:
             self.history = np.roll(self.history, shift=1, axis=0)
             self.history[0] = x
-        return self.history[self.steps - 1]
+        return self.linear(self.history)

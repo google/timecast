@@ -29,6 +29,7 @@ class SGD:
     def __call__(self, module, params, x, y):
         """call"""
         grad = jax.jit(jax.grad(lambda module, x, y: self.loss_fn(module(x), y)))(module, x, y)
+        print(grad.linear.params)
         new_params = {k: w - self.learning_rate * grad.params[k] for (k, w) in params.items()}
 
         return new_params

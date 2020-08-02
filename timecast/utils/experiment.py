@@ -176,4 +176,4 @@ class experiment:
             runner, self._generate_arglists(), chunksize=chunksize
         )
         process = single if processes == 1 else parallel
-        return list(process() if tqdm is None else tqdm.tqdm(process()))
+        return list(process() if tqdm is None else tqdm(process()))

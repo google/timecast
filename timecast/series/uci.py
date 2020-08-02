@@ -17,7 +17,7 @@ from typing import Tuple
 
 import numpy as np
 
-from timecast.series._core import generate_timeline
+from timecast.series.core import generate_timeline
 
 
 def generate(path=None) -> Tuple[np.ndarray, np.ndarray]:

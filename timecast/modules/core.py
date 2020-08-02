@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""timecast/modules/core.py"""
-# TODO
-# - Tree flatten is very crude (only applies to params)
-# - How to identify params (right now just ndarray)
-# - Users can do bad things with naming
-# - Think about jnp/np shim layer beyond tree_jnpify
+"""timecast/modules/core.py
+
+Todos:
+  - Tree flatten is very crude (only applies to params)
+  - How to identify params (right now just ndarray)
+  - Users can do bad things with naming
+  - Think about jnp/np shim layer beyond tree_jnpify
+"""
 import inspect
 
 import jax
@@ -25,6 +27,7 @@ import numpy as np
 
 
 def tree_jnpify(param_tree):
+    """Turn numpy arrays into jax arrays"""
     if isinstance(param_tree, jnp.ndarray) or isinstance(param_tree, np.ndarray):
         return jnp.asarray(param_tree)
 
@@ -63,6 +66,7 @@ class Module:
         """For avoiding super().__init__()"""
         obj = object.__new__(cls)
         obj.__setattr__("attrs", set())
+        obj.__setattr__("name", cls.__name__)
         obj.__setattr__("modules", {})
         obj.__setattr__("params", {})
         obj.__setattr__("arguments", inspect.signature(obj.__init__).bind(*args, **kwargs))
@@ -108,12 +112,14 @@ class Module:
             module.set_param_tree(tree[name])
 
     def update_param(self, key, val):
+        """Update single parameter"""
         if key in self.__dict__:
             self.__dict__[key] = val
 
         self.params[key] = val
 
     def update_params(self, dict):
+        """Update all parameters"""
         for key, val in dict.items():
             self.update_param(key, val)
 

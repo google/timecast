@@ -11,7 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""timecast/modules/_predict_last.py"""
+"""timecast/modules/_linear.py
+
+Todos:
+  - Implement batching
+  - Deal with array vs scalar
+"""
 from typing import Iterable
 
 import jax.numpy as jnp
@@ -20,24 +25,24 @@ import numpy as np
 from timecast.modules.core import Module
 
 
-class PredictLast(Module):
-    """Predict last value"""
+class Linear(Module):
+    """Predict linear combination"""
 
-    def __init__(self, input_shape=1, steps=1):
+    def __init__(self, input_shape, output_shape):
         """init"""
         if not isinstance(input_shape, Iterable):
             input_shape = (input_shape,)
+        if not isinstance(output_shape, Iterable):
+            output_shape = (output_shape,)
 
         self.input_shape = input_shape
-        self.steps = steps
-        self.history = np.zeros((steps,) + input_shape)
+        self.output_shape = output_shape
+
+        self.kernel = np.zeros(input_shape + output_shape)
+        self.bias = np.zeros(output_shape)
 
     def __call__(self, x):
         """call"""
-        if isinstance(x, jnp.ndarray):
-            self.history = jnp.roll(self.history, shift=1, axis=0)
-            self.history = self.history.at[0].set(x)
-        else:
-            self.history = np.roll(self.history, shift=1, axis=0)
-            self.history[0] = x
-        return self.history[self.steps - 1]
+        numpy = jnp if isinstance(x, jnp.ndarray) else np
+        axes = tuple(range(x.ndim))
+        return numpy.tensordot(self.kernel, x, (axes, axes)) + self.bias
