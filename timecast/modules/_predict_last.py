@@ -29,5 +29,4 @@ class PredictLast(Module):
         """call"""
         self.history = jnp.roll(self.history, shift=1)
         self.history = self.history.at[0].set(x)
-        print(self.steps - 1)
         return self.history[self.steps - 1]
