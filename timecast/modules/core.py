@@ -13,13 +13,10 @@
 # limitations under the License.
 """timecast/modules/core.py"""
 # TODO
-# - Optimizers should apply to all children unless children have specified version
-# - hierarchical parameters?
 # - Tree flatten is very crude (only applies to params)
 # - How to identify params (right now just ndarray)
-# - Pass class directly to jax
-# - How to handle buffers vs parameters
 # - Users can do bad things with naming
+# - Think about jnp/np shim layer beyond tree_jnpify
 import inspect
 
 import jax
