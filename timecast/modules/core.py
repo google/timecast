@@ -19,8 +19,11 @@ Todos:
   - Users can do bad things with naming
   - Think about jnp/np shim layer beyond tree_jnpify
   - Why are submodule params getting stuck in params dict after unflatten
+  - Apply via tree traversal (E.g., bias only)
+  - set_param_tree modifies self; ideally should return new object
 """
 import inspect
+import os
 
 import jax
 import jax.numpy as jnp
@@ -117,24 +120,24 @@ class Module:
             params[name] = module.get_param_tree()
         return params
 
-    def set_param_tree(self, tree=None, func=None):
+    def set_param_tree(self, tree=None, func=None, filter=None, path="/"):
         """Apply parameter tree"""
         tree = tree or self
         func = func or (lambda old, new: new)
+        filter = filter or (lambda path: True)
 
         is_dict = isinstance(tree, dict)
         tree_params = tree if is_dict else tree.params
         tree_modules = tree if is_dict else tree.modules
 
-        for param in self.params:
-            if param in self.modules:
-                continue
-            val = func(self.params[param], tree_params[param])
-            self.params[param] = val
-            self.__dict__[param] = val
+        for name, param in self.params.items():
+            if name not in self.modules and filter(os.path.join(path, name)):
+                param = func(param, tree_params[name])
+                self.params[name] = param
+                self.__dict__[name] = param
 
         for name, module in self.modules.items():
-            module.set_param_tree(tree_modules[name], func)
+            module.set_param_tree(tree_modules[name], func, os.path.join(path, name))
 
     def add_module(self, module, name=None):
         """Add module outside attributes"""

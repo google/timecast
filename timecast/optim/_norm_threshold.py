@@ -11,29 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""timecast/optim/_norm_threshold.py"""
+"""timecast/optim/_threshold.py"""
 import jax
 import jax.numpy as jnp
+
+
+def clip_norm(old, new, threshold):
+    """Helper function"""
+    norm = jnp.linalg.norm(old)
+    return jax.lax.cond(norm > threshold, old, lambda x: threshold / norm * x, old, lambda x: x)
 
 
 class NormThreshold:
     """Norm threshold"""
 
-    def __init__(self, norm_threshold=None):
+    def __init__(self, threshold, filter=None):
         """init"""
-        self.norm_threshold = norm_threshold or None
+        self.threshold = threshold
+        self.filter = filter
+        self.clip_norm = lambda old, new: clip_norm(old, new, threshold)
 
-    def __call__(self, module, params, x, y):
+    def __call__(self, module, x=None, y=None):
         """call"""
-        new_params = {}
-        for k in params():
-            norm = jnp.linalg.norm(params[k])
-            new_params[k] = jax.lax.cond(
-                norm > self.norm_threshold[k],
-                params[k],
-                lambda x: (self.norm_threshold[k] / norm) * x,
-                params[k],
-                lambda x: x,
-            )
+        module.set_param_tree(func=self.clip_norm, filter=self.filter)
 
-        return params
+        return module
