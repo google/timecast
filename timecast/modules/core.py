@@ -137,7 +137,9 @@ class Module:
                 self.__dict__[name] = param
 
         for name, module in self.modules.items():
-            module.set_param_tree(tree_modules[name], func, os.path.join(path, name))
+            module.set_param_tree(
+                tree=tree_modules[name], func=func, filter=filter, path=os.path.join(path, name)
+            )
 
     def add_module(self, module, name=None):
         """Add module outside attributes"""
