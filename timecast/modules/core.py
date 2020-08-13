@@ -80,13 +80,12 @@ def tree_unflatten(aux, leaves):
 class Module:
     """Core module class"""
 
-    attrs = set()
-    modules = {}
-    params = {}
-
     def __new__(cls, *args, **kwargs):
         """For avoiding super().__init__()"""
         obj = object.__new__(cls)
+        obj.__setattr__("attrs", set())
+        obj.__setattr__("modules", {})
+        obj.__setattr__("params", {})
         obj.__setattr__("arguments", inspect.signature(obj.__init__).bind(*args, **kwargs))
         obj.arguments.apply_defaults()
 
