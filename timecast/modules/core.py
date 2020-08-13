@@ -24,6 +24,7 @@ Todos:
 """
 import inspect
 import os
+import pickle
 
 import jax
 import jax.numpy as jnp
@@ -79,17 +80,22 @@ def tree_unflatten(aux, leaves):
 class Module:
     """Core module class"""
 
+    attrs = set()
+    modules = {}
+    params = {}
+
     def __new__(cls, *args, **kwargs):
         """For avoiding super().__init__()"""
         obj = object.__new__(cls)
-        obj.__setattr__("attrs", set())
-        obj.__setattr__("name", cls.__name__)
-        obj.__setattr__("modules", {})
-        obj.__setattr__("params", {})
         obj.__setattr__("arguments", inspect.signature(obj.__init__).bind(*args, **kwargs))
         obj.arguments.apply_defaults()
 
         return obj
+
+    @property
+    def name(self):
+        """Name of Module"""
+        return self.__class__.__name__
 
     @classmethod
     def __init_subclass__(cls, *args, **kwargs):
@@ -156,3 +162,17 @@ class Module:
             name = "{}_{}".format(name, counter)
             counter += 1
         self.__dict__["params"][name] = param
+
+    def save(self, path):
+        """Save module"""
+        dirname = os.path.abspath(os.path.dirname(path))
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+        with open(path, "wb") as file:
+            pickle.dump(self, file)
+
+    @classmethod
+    def load(cls, path):
+        """Load module"""
+        return pickle.load(open(path, "rb"))

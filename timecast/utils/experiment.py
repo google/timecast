@@ -25,6 +25,7 @@ from typing import Tuple
 from typing import Union
 
 import multiprocess.context as ctx
+import numpy as np
 import pathos
 
 ctx._force_start_method("spawn")
@@ -170,10 +171,11 @@ class experiment:
         self._validate()
 
         single = lambda: map(runner, self._generate_arglists())  # noqa: E731
+        num_tasks = np.product([len(spec[1]) for spec in self._spec])
 
         # TODO: Figure out why parallel hangs in pytest
         parallel = lambda: pathos.pools.ProcessPool(nodes=processes).imap(  # noqa: E731
             runner, self._generate_arglists(), chunksize=chunksize
         )
         process = single if processes == 1 else parallel
-        return list(process() if tqdm is None else tqdm(process()))
+        return list(process() if tqdm is None else tqdm(process(), total=num_tasks))
